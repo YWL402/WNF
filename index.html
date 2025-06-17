@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>窝囊废Desk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Microsoft YaHei", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-app-region: drag;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content {
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            padding: min(2vh, 4px) min(3vw, 8px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: min(2vw, 8px);
+        }
+
+        #result {
+            font-size: clamp(12px, calc(8px + 2vh + 1vw), 20px);
+            font-weight: 500;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-family: 'Segoe UI', 'Microsoft YaHei', monospace;
+            letter-spacing: max(0.2vw, 0.5px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+        }
+
+        #countdown {
+            font-size: clamp(9px, calc(6px + 1.5vh + 0.8vw), 16px);
+            opacity: 0.85;
+            color: #ffffff;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+            text-align: right;
+            min-width: 0;
+        }
+
+        .currency-symbol {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-right: min(0.5vw, 2px);
+        }
+
+        /* 收入增长动画 */
+        @keyframes countUp {
+            0% { transform: translateY(min(1vh, 5px)); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .income-update {
+            animation: countUp 0.3s ease-out;
+        }
+
+        /* 调整大小指示器 */
+        .resize-handle {
+            position: absolute;
+            width: min(2vh, 6px);
+            height: min(2vh, 6px);
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            bottom: 2px;
+            right: 2px;
+            cursor: se-resize;
+            -webkit-app-region: no-drag;
+            transition: background 0.3s;
+        }
+
+        .resize-handle:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 点击区域 */
+        .click-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            cursor: pointer;
+        }
+
+        /* 自适应断点 */
+        @media (max-width: 200px) {
+            .content {
+                padding: 2px 4px;
+            }
+            #result {
+                font-size: clamp(10px, calc(8px + 1.5vh), 16px);
+            }
+            #countdown {
+                font-size: clamp(8px, calc(6px + 1vh), 14px);
+            }
+        }
+
+        @media (min-width: 300px) {
+            .content {
+                padding: 4px 12px;
+            }
+            #result {
+                letter-spacing: 1px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="click-area" onclick="require('electron').ipcRenderer.send('hide-window')"></div>
+    <div class="content">
+        <div id="result">¥0.00</div>
+        <div id="countdown"></div>
+    </div>
+    <div class="resize-handle"></div>
+    <script src="renderer.js"></script>
+    <script>
+        let lastAmount = 0;
+        
+        function updateIncome(amount) {
+            const resultElement = document.getElementById('result');
+            if (resultElement && amount !== lastAmount) {
+                resultElement.classList.remove('income-update');
+                void resultElement.offsetWidth;
+                resultElement.classList.add('income-update');
+                lastAmount = amount;
+            }
+        }
+        
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            const message = args.join(' ');
+            const amountMatch = message.match(/¥([\d,.]+)/);
+            if (amountMatch) {
+                const amount = parseFloat(amountMatch[1].replace(',', ''));
+                updateIncome(amount);
+            }
+        };
+    </script>
+</body>
+</html> 

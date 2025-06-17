@@ -1,0 +1,72 @@
+{
+  "name": "salary-calculator",
+  "version": "1.0.0",
+  "description": "实时计算收入的桌面组件",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:portable": "node build-simple.js",
+    "build:release": "node create-release.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "electron-store": "^10.0.1"
+  },
+  "build": {
+    "appId": "com.wonangfei.desk",
+    "productName": "窝囊废Desk",
+    "copyright": "Copyright © 2024 窝囊废Desk",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon.png",
+      "sign": false,
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "窝囊废Desk"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "icon.png"
+    },
+    "asar": true,
+    "asarUnpack": [],
+    "npmRebuild": false,
+    "buildDependenciesFromSource": false
+  }
+}

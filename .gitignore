@@ -1,0 +1,194 @@
+# ========================
+# Node.js 相关
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.yarn-integrity
+
+# ========================
+# Electron 相关
+# ========================
+dist/
+build/
+out/
+release/
+app/dist/
+app/build/
+
+# Electron builder 缓存和配置
+.electron-builder.env
+.electron-builder/
+electron-builder.yml
+
+# 应用打包文件
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.snap
+*.appx
+*.exe
+*.msi
+*.nsis
+
+# ========================
+# 开发工具和IDE
+# ========================
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# WebStorm/IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+
+# ========================
+# 系统文件
+# ========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ========================
+# 环境变量和配置
+# ========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local.json
+
+# ========================
+# 日志文件
+# ========================
+logs/
+*.log
+*.log.*
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ========================
+# 缓存文件
+# ========================
+.eslintcache
+.stylelintcache
+.cache/
+.parcel-cache/
+.nyc_output/
+
+# ========================
+# 测试覆盖率
+# ========================
+coverage/
+*.lcov
+.coverage/
+
+# ========================
+# 临时文件
+# ========================
+*.tmp
+*.temp
+.tmp/
+.temp/
+*~
+
+# ========================
+# 打包和压缩文件
+# ========================
+*.tgz
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# ========================
+# 应用特定文件
+# ========================
+# 用户数据和配置
+userdata/
+config.json
+settings.json
+
+# 应用日志
+app.log
+error.log
+debug.log
+
+# 本地存储文件
+localStorage/
+sessionStorage/
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# ========================
+# 开发时的临时文件
+# ========================
+# 打包脚本生成的临时文件
+build-simple.js.backup
+create-release.js.backup
+
+# 测试文件
+test-results/
+screenshots/
+
+# ========================
+# Git 相关
+# ========================
+*.orig
+*.rej
+
+# ========================
+# 额外的开发文件
+# ========================
+# 调试文件
+*.map
+*.map.js
+
+# 编译器输出
+*.compiled.js
+*.min.js
+*.min.css
+
+# 文档生成
+docs/build/
+api-docs/
+
+# 依赖锁定文件（可选，根据团队需要）
+# package-lock.json
+# yarn.lock
+
+# Electron 特定的缓存
+.electron/
+.webpack/
+
+# 用户特定的配置文件
+user-preferences.json
+user-settings.json 
