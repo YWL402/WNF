@@ -1,6 +1,13 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron')
 const path = require('path')
 
+// 确保只有一个实例在运行
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+    app.quit()
+    return
+}
+
 let tray = null
 let mainWindow = null
 let settingsWindow = null
@@ -51,22 +58,16 @@ function createWindow() {
 }
 
 function createSettingsWindow() {
-    console.log('尝试创建设置窗口...')
-    
     if (settingsWindow) {
-        console.log('设置窗口已存在，尝试显示...')
         if (settingsWindow.isMinimized()) {
-            console.log('窗口已最小化，正在恢复...')
             settingsWindow.restore()
         }
         settingsWindow.show()
         settingsWindow.focus()
         settingsWindow.moveTop()
-        console.log('设置窗口应该已显示')
         return
     }
 
-    console.log('创建新的设置窗口...')
     settingsWindow = new BrowserWindow({
         width: 400,
         height: 600,
@@ -85,37 +86,17 @@ function createSettingsWindow() {
         center: true  // 居中显示
     })
 
-    console.log('设置窗口创建完成，加载HTML...')
     settingsWindow.loadFile('settings.html')
     settingsWindow.setMovable(true)
 
-    // 页面加载完成后显示窗口
     settingsWindow.once('ready-to-show', () => {
-        console.log('设置窗口准备就绪，正在显示...')
         settingsWindow.show()
         settingsWindow.focus()
         settingsWindow.moveTop()
-        console.log('设置窗口显示完成')
     })
 
     settingsWindow.on('closed', () => {
-        console.log('设置窗口已关闭')
         settingsWindow = null
-    })
-
-    // 处理窗口最小化
-    settingsWindow.on('minimize', () => {
-        console.log('设置窗口已最小化')
-        // 可以选择隐藏到托盘而不是最小化
-        // settingsWindow.hide()
-    })
-
-    settingsWindow.on('show', () => {
-        console.log('设置窗口显示事件触发')
-    })
-
-    settingsWindow.on('hide', () => {
-        console.log('设置窗口隐藏事件触发')
     })
 }
 
@@ -286,5 +267,16 @@ app.on('window-all-closed', function () {
 ipcMain.on('settings-updated', () => {
     if (mainWindow) {
         mainWindow.webContents.send('reload-data')
+    }
+})
+
+// 处理第二个实例启动
+app.on('second-instance', () => {
+    if (mainWindow) {
+        if (mainWindow.isMinimized()) {
+            mainWindow.restore()
+        }
+        mainWindow.show()
+        mainWindow.focus()
     }
 }) 
