@@ -3,6 +3,14 @@ let calculationInterval;
 let config = null;
 let todayEarnings = 0; // 当天已赚金额
 let lastSaveDate = null; // 上次保存的日期
+let lastDisplayedAmount = null;
+
+// 右键菜单相关
+let contextMenu = document.getElementById('context-menu');
+let currentStyle = localStorage.getItem('currentStyle') || '1';
+
+// 初始化风格
+document.body.className = `style-${currentStyle}`;
 
 // 页面加载时直接加载配置并开始计算
 window.onload = () => {
@@ -216,6 +224,69 @@ function calculateCurrentEarnings() {
     return earnedAmount;
 }
 
+// 计算距离上班或下班的时间
+function calculateTimeUntil() {
+    const now = new Date();
+    const currentDay = now.getDay() || 7;
+    
+    // 如果不是工作日，返回null
+    if (!config.workDays.includes(currentDay)) {
+        return null;
+    }
+
+    const [workStartHour, workStartMinute] = config.workStartTime.split(':').map(Number);
+    const [workEndHour, workEndMinute] = config.workEndTime.split(':').map(Number);
+    
+    const workStart = new Date();
+    workStart.setHours(workStartHour, workStartMinute, 0, 0);
+    
+    const workEnd = new Date();
+    workEnd.setHours(workEndHour, workEndMinute, 0, 0);
+
+    // 如果当前时间在工作时间内
+    if (now >= workStart && now <= workEnd) {
+        const timeUntilEnd = workEnd - now;
+        const hours = Math.floor(timeUntilEnd / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilEnd % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeUntilEnd % (1000 * 60)) / 1000);
+        return { type: '下班', hours, minutes, seconds };
+    }
+    // 如果当前时间早于上班时间
+    else if (now < workStart) {
+        const timeUntilStart = workStart - now;
+        const hours = Math.floor(timeUntilStart / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
+        return { type: '上班', hours, minutes, seconds };
+    }
+    // 如果当前时间晚于下班时间
+    else {
+        // 计算到明天上班的时间
+        const tomorrowStart = new Date(workStart);
+        tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+        const timeUntilTomorrow = tomorrowStart - now;
+        const hours = Math.floor(timeUntilTomorrow / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilTomorrow % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeUntilTomorrow % (1000 * 60)) / 1000);
+        return { type: '上班', hours, minutes, seconds };
+    }
+}
+
+// 更新倒计时显示
+function updateCountdown() {
+    const timeUntil = calculateTimeUntil();
+    const countdownElement = document.getElementById('countdown');
+    
+    if (!timeUntil) {
+        countdownElement.textContent = '休息日';
+        return;
+    }
+
+    const { type, hours, minutes, seconds } = timeUntil;
+    countdownElement.textContent = `距离${type}还有 ${hours}小时${minutes}分${seconds}秒`;
+}
+
+// 修改 startCalculation 函数
 function startCalculation() {
     if (!config || !config.monthlySalary) {
         log('无有效配置，跳过计算');
@@ -223,7 +294,6 @@ function startCalculation() {
     }
 
     log('开始计算收入...');
-    
     if (calculationInterval) {
         clearInterval(calculationInterval);
     }
@@ -243,8 +313,8 @@ function startCalculation() {
         
         if (!isWorkDay) {
             // 非工作日，显示当前已保存的收入
-            document.getElementById('result').textContent = `¥${todayEarnings.toFixed(2)}`;
-            document.getElementById('countdown').textContent = '非工作日';
+            updateIncomeDisplay(todayEarnings);
+            document.getElementById('countdown').textContent = '休息日';
             return;
         }
 
@@ -256,35 +326,8 @@ function startCalculation() {
                 saveTodayEarnings(todayEarnings);
             }
             
-            document.getElementById('result').textContent = `¥${todayEarnings.toFixed(2)}`;
-            
-            // 判断状态
-            const now = new Date();
-            const [startHour, startMinute] = config.workStartTime.split(':').map(Number);
-            const workStart = new Date();
-            workStart.setHours(startHour, startMinute, 0, 0);
-            
-            const [endHour, endMinute] = config.workEndTime.split(':').map(Number);
-            const workEnd = new Date();
-            workEnd.setHours(endHour, endMinute, 0, 0);
-            
-            const [lunchStartHour, lunchStartMinute] = config.lunchBreakStart.split(':').map(Number);
-            const lunchStart = new Date();
-            lunchStart.setHours(lunchStartHour, lunchStartMinute, 0, 0);
-            
-            const [lunchEndHour, lunchEndMinute] = config.lunchBreakEnd.split(':').map(Number);
-            const lunchEnd = new Date();
-            lunchEnd.setHours(lunchEndHour, lunchEndMinute, 0, 0);
-            
-            if (now < workStart) {
-                document.getElementById('countdown').textContent = '工作还未开始';
-            } else if (now >= lunchStart && now <= lunchEnd) {
-                document.getElementById('countdown').textContent = '午休时间';
-            } else if (now > workEnd) {
-                document.getElementById('countdown').textContent = '今日工作已结束';
-            } else {
-                document.getElementById('countdown').textContent = '未在工作时间';
-            }
+            updateIncomeDisplay(todayEarnings);
+            updateCountdown();
             return;
         }
 
@@ -299,40 +342,9 @@ function startCalculation() {
             saveTodayEarnings(todayEarnings);
         }
 
-        // 获取今天的工作开始时间用于显示计时
-        const [startHour, startMinute] = config.workStartTime.split(':').map(Number);
-        const workStartTime = new Date();
-        workStartTime.setHours(startHour, startMinute, 0, 0);
-
-        // 设置午休时间
-        const [lunchStartHour, lunchStartMinute] = config.lunchBreakStart.split(':').map(Number);
-        const lunchStartTime = new Date();
-        lunchStartTime.setHours(lunchStartHour, lunchStartMinute, 0, 0);
-
-        const [lunchEndHour, lunchEndMinute] = config.lunchBreakEnd.split(':').map(Number);
-        const lunchEndTime = new Date();
-        lunchEndTime.setHours(lunchEndHour, lunchEndMinute, 0, 0);
-
-        // 计算显示用的工作时间
-        let displayWorkTime = 0;
-        if (currentTime <= lunchStartTime) {
-            displayWorkTime = (currentTime - workStartTime) / 1000;
-        } else {
-            displayWorkTime = (currentTime - workStartTime) / 1000 - 
-                             (lunchEndTime - lunchStartTime) / 1000;
-        }
-
-        if (displayWorkTime < 0) displayWorkTime = 0;
-
-        // 格式化工作时间显示
-        const hours = Math.floor(displayWorkTime / 3600);
-        const minutes = Math.floor((displayWorkTime % 3600) / 60);
-        const seconds = Math.floor(displayWorkTime % 60);
-        const timeDisplay = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        document.getElementById('countdown').textContent = timeDisplay;
-
         // 更新显示
-        document.getElementById('result').textContent = `¥${todayEarnings.toFixed(2)}`;
+        updateIncomeDisplay(todayEarnings);
+        updateCountdown();
     }, 1000);
 }
 
@@ -343,8 +355,81 @@ function stopCalculation() {
     }
 }
 
+// 显示右键菜单
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    contextMenu.style.display = 'block';
+    contextMenu.style.left = `${e.pageX}px`;
+    contextMenu.style.top = `${e.pageY}px`;
+});
+
+// 点击其他地方关闭菜单
+document.addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+});
+
+// 切换风格
+function changeStyle(styleNumber) {
+    document.body.className = `style-${styleNumber}`;
+    currentStyle = styleNumber.toString();
+    localStorage.setItem('currentStyle', currentStyle);
+    contextMenu.style.display = 'none';
+}
+
 // 监听配置更新事件
 ipcRenderer.on('reload-data', () => {
     log('收到配置更新通知，重新加载数据');
     loadUserSalary();
-}); 
+});
+
+function updateIncomeDisplay(amount) {
+    const resultElement = document.getElementById('result');
+    const formattedAmount = new Intl.NumberFormat('zh-CN', {
+        style: 'currency',
+        currency: 'CNY',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+
+    // 如果是第一次显示或者金额没有变化，直接更新文本
+    if (lastDisplayedAmount === null || lastDisplayedAmount === amount) {
+        resultElement.textContent = formattedAmount;
+        lastDisplayedAmount = amount;
+        return;
+    }
+
+    // 移除旧的数字
+    while (resultElement.firstChild) {
+        resultElement.removeChild(resultElement.firstChild);
+    }
+
+    // 添加货币符号
+    const currencySymbol = document.createElement('span');
+    currencySymbol.textContent = '¥';
+    resultElement.appendChild(currencySymbol);
+
+    // 添加每个数字
+    formattedAmount.slice(1).split('').forEach((char, index) => {
+        const digitSpan = document.createElement('span');
+        digitSpan.className = 'digit';
+        digitSpan.textContent = char;
+        
+        // 如果是数字（不是逗号或小数点），检查是否需要动画
+        if (/\d/.test(char)) {
+            const oldFormattedAmount = new Intl.NumberFormat('zh-CN', {
+                style: 'currency',
+                currency: 'CNY',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(lastDisplayedAmount);
+            const oldChar = oldFormattedAmount.slice(1)[index];
+            if (oldChar !== char) {
+                digitSpan.classList.add('digit-change');
+            }
+        }
+        
+        resultElement.appendChild(digitSpan);
+    });
+
+    lastDisplayedAmount = amount;
+} 

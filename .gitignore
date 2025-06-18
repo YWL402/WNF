@@ -8,6 +8,12 @@ yarn-error.log*
 lerna-debug.log*
 .npm
 .yarn-integrity
+.pnpm-debug.log*
+
+# 包管理器锁定文件（团队协作时建议保留）
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
 # ========================
 # Electron 相关
@@ -22,7 +28,9 @@ app/build/
 # Electron builder 缓存和配置
 .electron-builder.env
 .electron-builder/
+.electron-builder-cache/
 electron-builder.yml
+electron-cache/
 
 # 应用打包文件
 *.dmg
@@ -59,6 +67,10 @@ electron-builder.yml
 # Atom
 .atom/
 
+# Vim
+*.swp
+*.swo
+
 # ========================
 # 系统文件
 # ========================
@@ -70,11 +82,13 @@ electron-builder.yml
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+$RECYCLE.BIN/
 
 # ========================
 # 环境变量和配置
 # ========================
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
@@ -107,6 +121,9 @@ pids
 coverage/
 *.lcov
 .coverage/
+test-results/
+allure-results/
+allure-report/
 
 # ========================
 # 临时文件
@@ -191,4 +208,37 @@ api-docs/
 
 # 用户特定的配置文件
 user-preferences.json
-user-settings.json 
+user-settings.json
+
+# ========================
+# CI/CD 和安全文件
+# ========================
+# GitHub Actions artifacts
+.github/workflows/artifacts/
+
+# 密钥和证书文件
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+secrets/
+*.secret
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# 设计文件
+*.psd
+*.ai
+*.sketch
+*.fig
+*.xd
+
+# 性能分析文件
+*.cpuprofile
+*.heapprofile 

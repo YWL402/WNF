@@ -1,18 +1,53 @@
 {
-  "name": "salary-calculator",
+  "name": "wnf",
   "version": "1.0.0",
-  "description": "实时计算收入的桌面组件",
+  "description": "窝囊废Desk",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.wnf.desk",
+    "productName": "窝囊废Desk",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "renderer.js",
+      "icon.png"
+    ],
+    "compression": "maximum",
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon.png",
+      "signAndEditExecutable": false,
+      "compression": "maximum"
+    },
+    "electronLanguages": ["zh-CN"],
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/",
+      "cache": "./electron-cache"
+    }
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^28.1.0"
+    "electron": "^29.1.0",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
-    "electron-store": "^10.0.1"
+    "electron-store": "^8.1.0"
   }
 }

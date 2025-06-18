@@ -103,6 +103,69 @@ function createTray() {
                 click: createSettingsWindow
             },
             { type: 'separator' },
+            {
+                label: '切换风格',
+                submenu: [
+                    {
+                        label: '紫色渐变',
+                        click: () => {
+                            if (mainWindow) {
+                                mainWindow.webContents.executeJavaScript('changeStyle(1)')
+                            }
+                        }
+                    },
+                    {
+                        label: '橙色渐变',
+                        click: () => {
+                            if (mainWindow) {
+                                mainWindow.webContents.executeJavaScript('changeStyle(2)')
+                            }
+                        }
+                    },
+                    { type: 'separator' },
+                    {
+                        label: '深蓝纯色',
+                        click: () => {
+                            if (mainWindow) {
+                                mainWindow.webContents.executeJavaScript('changeStyle(3)')
+                            }
+                        }
+                    },
+                    {
+                        label: '深灰纯色',
+                        click: () => {
+                            if (mainWindow) {
+                                mainWindow.webContents.executeJavaScript('changeStyle(4)')
+                            }
+                        }
+                    },
+                    {
+                        label: '薄荷纯色',
+                        click: () => {
+                            if (mainWindow) {
+                                mainWindow.webContents.executeJavaScript('changeStyle(5)')
+                            }
+                        }
+                    },
+                    {
+                        label: '天蓝纯色',
+                        click: () => {
+                            if (mainWindow) {
+                                mainWindow.webContents.executeJavaScript('changeStyle(6)')
+                            }
+                        }
+                    },
+                    {
+                        label: '紫色纯色',
+                        click: () => {
+                            if (mainWindow) {
+                                mainWindow.webContents.executeJavaScript('changeStyle(7)')
+                            }
+                        }
+                    }
+                ]
+            },
+            { type: 'separator' },
             { 
                 label: '退出', 
                 click: () => {
