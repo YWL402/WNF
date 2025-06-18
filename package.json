@@ -19,7 +19,9 @@
       "renderer.js",
       "settings.html",
       "settings.js",
-      "icon.png"
+      "icon.png",
+      "*.ico",
+      "*.png"
     ],
     "compression": "maximum",
     "nsis": {

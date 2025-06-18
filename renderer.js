@@ -35,6 +35,9 @@ function saveTodayEarnings(amount) {
     todayEarnings = amount;
     lastSaveDate = today;
     log(`保存当天收入: ¥${amount.toFixed(2)}`);
+    
+    // 发送收入更新到主进程
+    ipcRenderer.send('earnings-update', amount);
 }
 
 // 加载当天收入
@@ -50,21 +53,33 @@ function loadTodayEarnings() {
                 todayEarnings = earnings.amount || 0;
                 lastSaveDate = earnings.date;
                 log(`加载当天收入: ¥${todayEarnings.toFixed(2)}`);
+                
+                // 发送收入更新到主进程
+                ipcRenderer.send('earnings-update', todayEarnings);
             } else {
                 log('检测到新的一天，清零收入');
                 todayEarnings = 0;
                 lastSaveDate = null;
                 // 清除旧数据
                 localStorage.removeItem('todayEarnings');
+                
+                // 发送收入更新到主进程
+                ipcRenderer.send('earnings-update', 0);
             }
         } else {
             todayEarnings = 0;
             lastSaveDate = null;
+            
+            // 发送收入更新到主进程
+            ipcRenderer.send('earnings-update', 0);
         }
     } catch (error) {
         log('加载当天收入失败: ' + error.message, 'error');
         todayEarnings = 0;
         lastSaveDate = null;
+        
+        // 发送收入更新到主进程
+        ipcRenderer.send('earnings-update', 0);
     }
 }
 
@@ -111,6 +126,8 @@ function loadUserSalary() {
 // 检查当前是否在工作时间
 function checkWorkTime() {
     if (!config || !config.workDays) {
+        // 发送工作状态更新
+        ipcRenderer.send('work-status-update', '未配置');
         return false;
     }
 
@@ -119,6 +136,8 @@ function checkWorkTime() {
     
     // 检查是否是工作日
     if (!config.workDays.includes(currentDay)) {
+        // 发送工作状态更新
+        ipcRenderer.send('work-status-update', '休息日');
         return false;
     }
 
@@ -140,7 +159,22 @@ function checkWorkTime() {
     lunchEnd.setHours(lunchEndHour, lunchEndMinute, 0, 0);
 
     // 检查是否在工作时间内（不在午休时间）
-    return now >= workStart && now <= workEnd && !(now >= lunchStart && now <= lunchEnd);
+    const isWorkTime = now >= workStart && now <= workEnd && !(now >= lunchStart && now <= lunchEnd);
+    
+    // 发送工作状态更新
+    let status;
+    if (now < workStart) {
+        status = '未上班';
+    } else if (now > workEnd) {
+        status = '已下班';
+    } else if (now >= lunchStart && now <= lunchEnd) {
+        status = '午休中';
+    } else {
+        status = '工作中';
+    }
+    ipcRenderer.send('work-status-update', status);
+    
+    return isWorkTime;
 }
 
 // 计算每天实际工作小时数
