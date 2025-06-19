@@ -127,7 +127,7 @@ function loadUserSalary() {
 function checkWorkTime() {
     if (!config || !config.workDays) {
         // 发送工作状态更新
-        ipcRenderer.send('work-status-update', '未配置');
+        ipcRenderer.send('work-status-update', 'Not Configured');
         return false;
     }
 
@@ -137,7 +137,7 @@ function checkWorkTime() {
     // 检查是否是工作日
     if (!config.workDays.includes(currentDay)) {
         // 发送工作状态更新
-        ipcRenderer.send('work-status-update', '休息日');
+        ipcRenderer.send('work-status-update', 'Weekend');
         return false;
     }
 
@@ -164,13 +164,13 @@ function checkWorkTime() {
     // 发送工作状态更新
     let status;
     if (now < workStart) {
-        status = '未上班';
+        status = 'Before Work';
     } else if (now > workEnd) {
-        status = '已下班';
+        status = 'After Work';
     } else if (now >= lunchStart && now <= lunchEnd) {
-        status = '午休中';
+        status = 'Lunch Break';
     } else {
-        status = '工作中';
+        status = 'Working';
     }
     ipcRenderer.send('work-status-update', status);
     
