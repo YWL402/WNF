@@ -170,33 +170,12 @@ function updateTrayMenu() {
             label: '🎨 切换风格',
             submenu: [
                 {
-                    label: '🌌 紫色渐变',
+                    label: '🌙 深色模式',
                     click: () => changeWindowStyle(1)
                 },
                 {
-                    label: '🌅 橙色渐变',
+                    label: '☀️ 浅色模式',
                     click: () => changeWindowStyle(2)
-                },
-                { type: 'separator' },
-                {
-                    label: '🌊 深蓝纯色',
-                    click: () => changeWindowStyle(3)
-                },
-                {
-                    label: '🌑 深灰纯色',
-                    click: () => changeWindowStyle(4)
-                },
-                {
-                    label: '🌿 薄荷纯色',
-                    click: () => changeWindowStyle(5)
-                },
-                {
-                    label: '☁️ 天蓝纯色',
-                    click: () => changeWindowStyle(6)
-                },
-                {
-                    label: '🔮 紫色纯色',
-                    click: () => changeWindowStyle(7)
                 }
             ]
         },
@@ -336,7 +315,8 @@ app.on('second-instance', () => {
 function changeWindowStyle(styleNumber) {
     if (mainWindow) {
         mainWindow.webContents.executeJavaScript(`changeStyle(${styleNumber})`)
-        showNotification('风格切换', `已切换到风格 ${styleNumber}`)
+        const modeName = styleNumber === 1 ? '深色模式' : '浅色模式'
+        showNotification('风格切换', `已切换到${modeName}`)
     }
 }
 
