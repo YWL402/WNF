@@ -12,7 +12,7 @@ async function createRelease() {
         const appDir = await buildApp();
         
         // 2. 使用PowerShell创建zip文件
-        const zipPath = path.join(__dirname, 'dist', '窝囊废Desk-portable.zip');
+        const zipPath = path.join(__dirname, 'dist', 'WNF-portable.zip');
         console.log('\n📦 正在创建压缩包...');
         
         // 删除已存在的zip文件

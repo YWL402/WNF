@@ -1,7 +1,7 @@
 {
   "name": "wnf",
   "version": "1.0.0",
-  "description": "窝囊废Desk",
+  "description": "WNF",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,7 +9,7 @@
   },
   "build": {
     "appId": "com.wnf.desk",
-    "productName": "窝囊废Desk",
+    "productName": "WNF",
     "directories": {
       "output": "dist"
     },

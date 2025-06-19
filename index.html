@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>窝囊废Desk</title>
+    <title>WNF</title>
     <style>
         * {
             margin: 0;
@@ -68,6 +68,8 @@
             flex-grow: 1;
             text-align: right;
             min-width: 0;
+            transition: opacity 0.3s ease;
+            position: relative;
         }
 
         .currency-symbol {
@@ -205,13 +207,69 @@
             background-color: rgba(0, 0, 0, 0.1);
             margin: 4px 0;
         }
+
+        /* 简单的淡入淡出动画 */
+        .countdown-fade-out {
+            animation: fadeOut 0.2s ease-out forwards;
+        }
+
+        .countdown-fade-in {
+            animation: fadeIn 0.2s ease-in forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 0.85;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 0.85;
+            }
+        }
+
+        /* 轮播指示器 - 简化版 */
+        .rotation-indicator {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .rotation-indicator.active {
+            opacity: 1;
+            animation: simplePulse 2s infinite ease-in-out;
+        }
+
+        @keyframes simplePulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body class="style-1">
     <div class="click-area" onclick="require('electron').ipcRenderer.send('hide-window')"></div>
     <div class="content">
         <div id="result">¥0.00</div>
-        <div id="countdown"></div>
+        <div id="countdown">
+            <div class="rotation-indicator"></div>
+        </div>
     </div>
     <div class="resize-handle"></div>
     <div id="context-menu">

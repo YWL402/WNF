@@ -270,6 +270,8 @@ function calculateTimeUntil() {
 
     const [workStartHour, workStartMinute] = config.workStartTime.split(':').map(Number);
     const [workEndHour, workEndMinute] = config.workEndTime.split(':').map(Number);
+    const [lunchStartHour, lunchStartMinute] = config.lunchBreakStart.split(':').map(Number);
+    const [lunchEndHour, lunchEndMinute] = config.lunchBreakEnd.split(':').map(Number);
     
     const workStart = new Date();
     workStart.setHours(workStartHour, workStartMinute, 0, 0);
@@ -277,8 +279,42 @@ function calculateTimeUntil() {
     const workEnd = new Date();
     workEnd.setHours(workEndHour, workEndMinute, 0, 0);
 
-    // 如果当前时间在工作时间内
-    if (now >= workStart && now <= workEnd) {
+    const lunchStart = new Date();
+    lunchStart.setHours(lunchStartHour, lunchStartMinute, 0, 0);
+    
+    const lunchEnd = new Date();
+    lunchEnd.setHours(lunchEndHour, lunchEndMinute, 0, 0);
+
+    // 如果当前时间在午休时间内
+    if (now >= lunchStart && now <= lunchEnd) {
+        const timeUntilLunchEnd = lunchEnd - now;
+        const hours = Math.floor(timeUntilLunchEnd / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilLunchEnd % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeUntilLunchEnd % (1000 * 60)) / 1000);
+        return { type: '午休结束', hours, minutes, seconds };
+    }
+    // 如果当前时间在工作时间内且在午休前（可以轮播显示）
+    else if (now >= workStart && now < lunchStart) {
+        // 计算距离午休的时间
+        const timeUntilLunch = lunchStart - now;
+        const lunchHours = Math.floor(timeUntilLunch / (1000 * 60 * 60));
+        const lunchMinutes = Math.floor((timeUntilLunch % (1000 * 60 * 60)) / (1000 * 60));
+        const lunchSeconds = Math.floor((timeUntilLunch % (1000 * 60)) / 1000);
+        
+        // 计算距离下班的时间
+        const timeUntilEnd = workEnd - now;
+        const endHours = Math.floor(timeUntilEnd / (1000 * 60 * 60));
+        const endMinutes = Math.floor((timeUntilEnd % (1000 * 60 * 60)) / (1000 * 60));
+        const endSeconds = Math.floor((timeUntilEnd % (1000 * 60)) / 1000);
+        
+        return { 
+            type: 'beforeLunch',
+            lunch: { type: '午休', hours: lunchHours, minutes: lunchMinutes, seconds: lunchSeconds },
+            work: { type: '下班', hours: endHours, minutes: endMinutes, seconds: endSeconds }
+        };
+    }
+    // 如果当前时间在午休后的工作时间内（只显示距离下班）
+    else if (now > lunchEnd && now <= workEnd) {
         const timeUntilEnd = workEnd - now;
         const hours = Math.floor(timeUntilEnd / (1000 * 60 * 60));
         const minutes = Math.floor((timeUntilEnd % (1000 * 60 * 60)) / (1000 * 60));
@@ -306,18 +342,114 @@ function calculateTimeUntil() {
     }
 }
 
-// 更新倒计时显示
+// 轮播显示的当前索引和动画状态
+let rotationIndex = 0;
+let isAnimating = false;
+let lastRotationTime = 0;
+let currentDisplayText = ''; // 缓存当前显示的文本，避免重复更新
+
+// 更新倒计时显示（带动画效果）
 function updateCountdown() {
     const timeUntil = calculateTimeUntil();
     const countdownElement = document.getElementById('countdown');
+    const indicator = document.querySelector('.rotation-indicator');
     
     if (!timeUntil) {
-        countdownElement.textContent = '休息日';
+        setCountdownText('休息日', false);
+        if (indicator) indicator.classList.remove('active');
         return;
     }
 
-    const { type, hours, minutes, seconds } = timeUntil;
-    countdownElement.textContent = `距离${type}还有 ${hours}小时${minutes}分${seconds}秒`;
+    // 如果是午休前，轮播显示距离午休和距离下班的时间
+    if (timeUntil.type === 'beforeLunch') {
+        const currentTime = Date.now();
+        const shouldShowLunch = Math.floor(currentTime / 10000) % 2 === 0; // 改为10秒切换
+        const rotationChanged = Math.floor(currentTime / 10000) !== Math.floor(lastRotationTime / 10000);
+        
+        // 激活轮播指示器（只在首次激活时操作DOM）
+        if (indicator && !indicator.classList.contains('active')) {
+            indicator.classList.add('active');
+        }
+        
+        let newText;
+        if (shouldShowLunch) {
+            const { type, hours, minutes, seconds } = timeUntil.lunch;
+            newText = `距离${type}还有 ${hours}小时${minutes}分${seconds}秒`;
+        } else {
+            const { type, hours, minutes, seconds } = timeUntil.work;
+            newText = `距离${type}还有 ${hours}小时${minutes}分${seconds}秒`;
+        }
+        
+        // 如果发生了轮播切换且文本确实变化了，使用动画
+        if (rotationChanged && !isAnimating && lastRotationTime > 0 && newText !== currentDisplayText) {
+            animateCountdownChange(newText);
+        } else if (newText !== currentDisplayText) {
+            // 文本变化但不需要轮播动画（比如秒数更新）
+            setCountdownText(newText, false);
+        }
+        
+        lastRotationTime = currentTime;
+    } else {
+        // 其他情况正常显示，关闭指示器
+        if (indicator && indicator.classList.contains('active')) {
+            indicator.classList.remove('active');
+        }
+        const { type, hours, minutes, seconds } = timeUntil;
+        const newText = `距离${type}还有 ${hours}小时${minutes}分${seconds}秒`;
+        
+        // 只在文本真正变化时更新
+        if (newText !== currentDisplayText) {
+            setCountdownText(newText, false);
+        }
+    }
+}
+
+// 设置倒计时文本（简化版本）
+function setCountdownText(text, addPulse = false) {
+    const countdownElement = document.getElementById('countdown');
+    if (!countdownElement) return;
+    
+    // 缓存文本，避免重复操作
+    currentDisplayText = text;
+    
+    // 获取文本节点（排除指示器元素）
+    let textNode = Array.from(countdownElement.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+    if (textNode) {
+        // 只在文本真正不同时更新
+        if (textNode.textContent !== text) {
+            textNode.textContent = text;
+        }
+    } else {
+        // 如果没有文本节点，创建一个
+        const newTextNode = document.createTextNode(text);
+        countdownElement.insertBefore(newTextNode, countdownElement.firstChild);
+    }
+}
+
+// 动画化倒计时文本切换（简化版本）
+function animateCountdownChange(newText) {
+    if (isAnimating) return;
+    
+    const countdownElement = document.getElementById('countdown');
+    if (!countdownElement) return;
+    
+    isAnimating = true;
+    
+    // 简单的淡出
+    countdownElement.classList.add('countdown-fade-out');
+    
+    // 等待淡出完成后更换文本并淡入
+    setTimeout(() => {
+        setCountdownText(newText, false);
+        countdownElement.classList.remove('countdown-fade-out');
+        countdownElement.classList.add('countdown-fade-in');
+        
+        // 清除淡入动画
+        setTimeout(() => {
+            countdownElement.classList.remove('countdown-fade-in');
+            isAnimating = false;
+        }, 200);
+    }, 200);
 }
 
 // 修改 startCalculation 函数

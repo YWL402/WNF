@@ -132,7 +132,7 @@ function translateWorkStatus(status) {
 function updateTrayTooltip() {
     if (!tray) return
     
-    const tooltip = `窝囊废Desk
+    const tooltip = `WNF
 工作状态: ${translateWorkStatus(workStatus)}
 今日收入: ¥${currentEarnings.toFixed(2)}
 点击显示/隐藏窗口

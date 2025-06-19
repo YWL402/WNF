@@ -14,7 +14,7 @@ async function buildApp() {
         }
         
         // 创建应用目录
-        const appDir = path.join(distDir, '窝囊废Desk-portable');
+        const appDir = path.join(distDir, 'WNF-portable');
         if (fs.existsSync(appDir)) {
             fs.rmSync(appDir, { recursive: true, force: true });
         }
@@ -55,7 +55,7 @@ async function buildApp() {
         
         // 创建启动脚本
         const startScript = `@echo off
-echo 正在启动窝囊废Desk...
+echo 正在启动WNF...
 cd /d "%~dp0"
 npx electron . 2>nul
 if errorlevel 1 (
@@ -67,7 +67,7 @@ if errorlevel 1 (
         fs.writeFileSync(path.join(appDir, '启动.bat'), startScript);
         
         // 创建README
-        const readme = `# 窝囊废Desk - 便携版
+        const readme = `# WNF - 便携版
 
 ## 使用说明
 
