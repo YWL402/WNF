@@ -287,11 +287,23 @@ function calculateTimeUntil() {
 
     // 如果当前时间在午休时间内
     if (now >= lunchStart && now <= lunchEnd) {
+        // 计算距离午休结束的时间
         const timeUntilLunchEnd = lunchEnd - now;
-        const hours = Math.floor(timeUntilLunchEnd / (1000 * 60 * 60));
-        const minutes = Math.floor((timeUntilLunchEnd % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeUntilLunchEnd % (1000 * 60)) / 1000);
-        return { type: '午休结束', hours, minutes, seconds };
+        const lunchEndHours = Math.floor(timeUntilLunchEnd / (1000 * 60 * 60));
+        const lunchEndMinutes = Math.floor((timeUntilLunchEnd % (1000 * 60 * 60)) / (1000 * 60));
+        const lunchEndSeconds = Math.floor((timeUntilLunchEnd % (1000 * 60)) / 1000);
+        
+        // 计算距离下班的时间
+        const timeUntilWorkEnd = workEnd - now;
+        const workEndHours = Math.floor(timeUntilWorkEnd / (1000 * 60 * 60));
+        const workEndMinutes = Math.floor((timeUntilWorkEnd % (1000 * 60 * 60)) / (1000 * 60));
+        const workEndSeconds = Math.floor((timeUntilWorkEnd % (1000 * 60)) / 1000);
+        
+        return { 
+            type: 'lunchBreak',
+            lunchEnd: { type: '午休结束', hours: lunchEndHours, minutes: lunchEndMinutes, seconds: lunchEndSeconds },
+            workEnd: { type: '下班', hours: workEndHours, minutes: workEndMinutes, seconds: workEndSeconds }
+        };
     }
     // 如果当前时间在工作时间内且在午休前（可以轮播显示）
     else if (now >= workStart && now < lunchStart) {
@@ -389,7 +401,38 @@ function updateCountdown() {
         }
         
         lastRotationTime = currentTime;
-    } else {
+    } 
+    // 如果是午休中，轮播显示距离午休结束和距离下班的时间
+    else if (timeUntil.type === 'lunchBreak') {
+        const currentTime = Date.now();
+        const shouldShowLunchEnd = Math.floor(currentTime / 10000) % 2 === 0; // 改为10秒切换
+        const rotationChanged = Math.floor(currentTime / 10000) !== Math.floor(lastRotationTime / 10000);
+        
+        // 激活轮播指示器（只在首次激活时操作DOM）
+        if (indicator && !indicator.classList.contains('active')) {
+            indicator.classList.add('active');
+        }
+        
+        let newText;
+        if (shouldShowLunchEnd) {
+            const { type, hours, minutes, seconds } = timeUntil.lunchEnd;
+            newText = `距离${type}还有 ${hours}小时${minutes}分${seconds}秒`;
+        } else {
+            const { type, hours, minutes, seconds } = timeUntil.workEnd;
+            newText = `距离${type}还有 ${hours}小时${minutes}分${seconds}秒`;
+        }
+        
+        // 如果发生了轮播切换且文本确实变化了，使用动画
+        if (rotationChanged && !isAnimating && lastRotationTime > 0 && newText !== currentDisplayText) {
+            animateCountdownChange(newText);
+        } else if (newText !== currentDisplayText) {
+            // 文本变化但不需要轮播动画（比如秒数更新）
+            setCountdownText(newText, false);
+        }
+        
+        lastRotationTime = currentTime;
+    }
+    else {
         // 其他情况正常显示，关闭指示器
         if (indicator && indicator.classList.contains('active')) {
             indicator.classList.remove('active');
