@@ -37,10 +37,10 @@ function createWindow() {
         alwaysOnTop: true,
         backgroundColor: '#00ffffff',
         icon: path.join(__dirname, 'icon.png'),
-        minWidth: 160,  // 最小宽度
-        minHeight: 30,  // 最小高度
-        maxWidth: 400,  // 最大宽度
-        maxHeight: 80   // 最大高度
+        minWidth: 80,  // 最小宽度
+        minHeight: 25,  // 最小高度
+        maxWidth: 600,  // 最大宽度
+        maxHeight: 150   // 最大高度
     })
 
     mainWindow.loadFile('index.html')
