@@ -34,13 +34,13 @@
 ## 📥 安装与使用
 
 ### 直接下载 (推荐)
-1. 前往 [Releases 页面](../../releases) 下载最新版本的 `WNF-Setup-x.x.x.exe`。
-2. 双击运行安装程序即可。
+1. 前往 [Releases 页面](../../releases) 下载最新版本的 `WNF x.x.x.exe`。
+2. 双击运行即可。
 
 ### 本地开发
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/WNF.git
+git clone https://github.com/YWL402/WNF.git
 cd WNF
 
 # 安装依赖
